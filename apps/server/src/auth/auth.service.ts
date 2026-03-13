@@ -497,6 +497,7 @@ export class AuthService {
 
     // Validate verification code
     const { email, projectId, role } = await this.validateSignupCode(code, isInvite);
+    this.assertRegistrationEmailAllowed(email);
 
     // Hash password
     const hashedPassword = await this.passwordService.hashPassword(password);
