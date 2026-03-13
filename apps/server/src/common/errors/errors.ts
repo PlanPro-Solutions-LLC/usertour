@@ -73,6 +73,14 @@ export class EmailAlreadyRegistered extends BaseError {
   };
 }
 
+export class RegistrationDomainNotAllowedError extends BaseError {
+  code = 'E0024';
+  messageDict = {
+    en: 'Only advizorpro.com email addresses can be registered',
+    'zh-CN': '仅允许注册 advizorpro.com 邮箱地址',
+  };
+}
+
 export class InvalidVerificationSession extends BaseError {
   code = 'E0008';
   messageDict = {
@@ -386,6 +394,7 @@ const errorMap = {
   E0017: LicenseExpiredError,
   E0018: LicenseProjectMismatchError,
   E0019: LicenseDecodeError,
+  E0024: RegistrationDomainNotAllowedError,
   E1000: InvalidApiKeyError,
   E1001: UserNotFoundError,
   E1002: CompanyNotFoundError,
