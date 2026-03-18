@@ -29,6 +29,7 @@ import {
   InvalidVerificationSession,
   OAuthError,
   PasswordIncorrect,
+  RegistrationDomainNotAllowedError,
   UnknownError,
 } from '@/common/errors';
 import { TeamService } from '@/team/team.service';
@@ -45,6 +46,7 @@ import { RedisService, LockReleaseFn } from '@/shared/redis.service';
 const EMAIL_COOLDOWN_MS = 60 * 1000; // 60 seconds - minimum interval between email sends
 const REGISTER_REUSE_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours - reuse existing register record within this window
 const EMAIL_LOCK_KEY_PREFIX = 'magic-link-email:';
+const ALLOWED_REGISTRATION_DOMAIN = 'advizorpro.com';
 
 @Injectable()
 export class AuthService {
@@ -74,6 +76,13 @@ export class AuthService {
       items.push({ provider: 'github' });
     }
     return items;
+  }
+
+  private assertRegistrationEmailAllowed(email: string) {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail.endsWith(`@${ALLOWED_REGISTRATION_DOMAIN}`)) {
+      throw new RegistrationDomainNotAllowedError();
+    }
   }
 
   cookieOptions(key: string): CookieOptions {
@@ -185,6 +194,8 @@ export class AuthService {
       }
       return user;
     }
+
+    this.assertRegistrationEmailAllowed(email);
 
     // download avatar if profile photo exists
     let avatar: string;
@@ -344,6 +355,8 @@ export class AuthService {
   }
 
   async createMagicLink(email: string) {
+    this.assertRegistrationEmailAllowed(email);
+
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (user) {
       throw new EmailAlreadyRegistered();
